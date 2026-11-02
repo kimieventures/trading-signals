@@ -60,7 +60,8 @@ int CountOpenPositions(const string symbol)
    int n = 0;
    for(int i = PositionsTotal() - 1; i >= 0; i--)
    {
-      if(!PositionGetSymbol(i)) continue;
+      ulong ticket = PositionGetTicket(i);
+      if(ticket == 0) continue;
       if(PositionGetInteger(POSITION_MAGIC) != MagicNumber) continue;
       if(StringLen(symbol) == 0 || PositionGetString(POSITION_SYMBOL) == symbol)
          n++;
@@ -72,7 +73,8 @@ void CloseAllEAPositions(const string why)
 {
    for(int i = PositionsTotal() - 1; i >= 0; i--)
    {
-      if(!PositionGetSymbol(i)) continue;
+      ulong ticket = PositionGetTicket(i);
+      if(ticket == 0) continue;
       if(PositionGetInteger(POSITION_MAGIC) != MagicNumber) continue;
       MqlTradeRequest req; MqlTradeResult res;
       ZeroMemory(req); ZeroMemory(res);
