@@ -1,4 +1,14 @@
 {
  "enabled": true,
- "signals": []
+ "signals": [
+  {
+   "id": "GBPUSD-TEST-EAW",
+   "pair": "GBPUSD",
+   "dir": "LONG",
+   "sl_dist": 0.0019,
+   "tp_dist": 0.0019,
+   "ts": 1793633269,
+   "lot": 0.02
+  }
+ ]
 }
