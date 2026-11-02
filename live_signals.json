@@ -1,23 +1,4 @@
 {
  "enabled": true,
- "signals": [
-  {
-   "id": "TEST-CACHE-1",
-   "pair": "EURUSD",
-   "dir": "SHORT",
-   "sl_dist": 0.0014,
-   "tp_dist": 0.0014,
-   "ts": 1793630475,
-   "lot": 0.02
-  },
-  {
-   "id": "TEST-PURGE-1",
-   "pair": "USDJPY",
-   "dir": "LONG",
-   "sl_dist": 0.14,
-   "tp_dist": 0.14,
-   "ts": 1793630514,
-   "lot": 0.01
-  }
- ]
+ "signals": []
 }
