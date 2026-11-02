@@ -30,13 +30,13 @@
 #property version   "1.00"
 #property strict
 
-input string SignalURL      = "";     // full raw URL of signals.json
+input string SignalURL      = "https://api.github.com/repos/kimieventures/trading-signals/contents/live_signals.json";
 input double MaxLots        = 0.03;   // hard cap per trade
 input double RiskPct        = 2.0;    // max % of balance risked via SL
 input int    MaxLossesPerDay = 2;    // stop trading after N losses today
 input int    SessionCloseGMT = 21;   // flatten all positions at this hour UTC
-input int    PollSeconds    = 30;
-input int    MaxSignalAgeSec = 300;  // ignore signals older than this
+input int    PollSeconds    = 75;    // KEEP >= 75 (GitHub API rate limit 60/hr)
+input int    MaxSignalAgeSec = 600;  // ignore signals older than this
 input long   MagicNumber    = 778899;
 
 #define GV_PREFIX "KIMIE_EA_"
@@ -208,17 +208,41 @@ void ProcessSignals()
 {
    char post[];
    char result[];
-   string headers;
    string resHeaders;
    ResetLastError();
-   int status = WebRequest("GET", SignalURL, "", 5000, post, result, resHeaders);
+   // NOTE: GitHub contents API returns JSON with base64 content - fresh within 60s
+   int status = WebRequest("GET", SignalURL, "", 8000, post, result, resHeaders);
+   if(status == 403)
+   {
+      Print("API rate limit hit - backing off this poll");
+      return;
+   }
    if(status != 200)
    {
       Print("WebRequest failed status=", status, " err=", GetLastError(),
-            " (check URL allowlist in Tools>Options>Expert Advisors)");
+            " (allowlist https://api.github.com in Tools>Options>Expert Advisors)");
       return;
    }
-   string js = CharArrayToString(result);
+   string api = CharArrayToString(result);
+
+   // extract the base64 "content" field and decode it
+   int cs = StringFind(api, "\"content\":");
+   if(cs < 0) { Print("no content field in API response"); return; }
+   int q1 = StringFind(api, "\"", cs + 10);
+   int q2 = StringFind(api, "\"", q1 + 1);
+   if(q1 < 0 || q2 <= q1) { Print("content field parse failed"); return; }
+   string b64 = StringSubstr(api, q1 + 1, q2 - q1 - 1);
+   StringReplace(b64, "\\n", "");
+   StringReplace(b64, "\\/", "/");
+   uchar src[];
+   uchar key[];
+   uchar dst[];
+   int blen = StringLen(b64);
+   StringToCharArray(b64, src, 0, blen, CP_ACP);
+   ArrayResize(src, blen);
+   int dlen = CryptDecode(CRYPT_BASE64, src, key, dst);
+   if(dlen <= 0) { Print("base64 decode failed err=", GetLastError()); return; }
+   string js = CharArrayToString(dst, 0, dlen);
    if(StringLen(js) == 0) return;
 
    // master kill-switch
