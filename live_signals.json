@@ -1,4 +1,14 @@
 {
  "enabled": true,
- "signals": []
+ "signals": [
+  {
+   "id": "TEST-FINAL-1",
+   "pair": "GBPUSD",
+   "dir": "LONG",
+   "sl_dist": 0.0019,
+   "tp_dist": 0.0019,
+   "ts": 1793630636,
+   "lot": 0.02
+  }
+ ]
 }
