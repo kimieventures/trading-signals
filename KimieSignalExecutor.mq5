@@ -304,11 +304,13 @@ void ProcessSignals()
       double slDist= StringToDouble(JsonStr(sig, "sl_dist"));
       double tpDist= StringToDouble(JsonStr(sig, "tp_dist"));
       long   ts    = StringToInteger(JsonStr(sig, "ts"));
+      long   pub   = StringToInteger(JsonStr(sig, "pub"));
       double lot   = StringToDouble(JsonStr(sig, "lot"));
 
       if(StringLen(id) == 0 || StringLen(pair) == 0) continue;
       if(IdDone(id)) continue;                        // already executed
-      long age = (long)TimeGMT() - ts;
+      long sigTime = (pub > 0) ? pub : ts;            // freshness from PUBLISH time
+      long age = (long)TimeGMT() - sigTime;
       if(age < 0 || age > MaxSignalAgeSec) continue;  // stale
       if(dir != "LONG" && dir != "SHORT") continue;
       if(slDist <= 0 || tpDist <= 0) continue;
