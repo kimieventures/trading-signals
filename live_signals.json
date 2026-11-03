@@ -45,16 +45,6 @@
    "tp_dist": 0.185212,
    "ts": 1793718000,
    "lot": 0.02
-  },
-  {
-   "id": "GBPUSD-ENGINE-SIM",
-   "pair": "GBPUSD",
-   "dir": "LONG",
-   "sl_dist": 0.0019,
-   "tp_dist": 0.0019,
-   "ts": 1793730066,
-   "pub": 1793730996,
-   "lot": 0.02
   }
  ]
 }
