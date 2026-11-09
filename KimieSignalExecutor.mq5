@@ -27,7 +27,7 @@
 //|  5. Enable Algo Trading (toolbar button)                         |
 //+------------------------------------------------------------------+
 #property copyright "Kimie & Zizi"
-#property version   "1.40"
+#property version   "1.50"
 #property strict
 
 input string SignalURL      = "https://api.github.com/repos/kimieventures/trading-signals/contents/live_signals.json";
@@ -39,6 +39,7 @@ input int    PollSeconds    = 75;    // KEEP >= 75 (GitHub API rate limit 60/hr)
 input int    MaxSignalAgeSec = 600;  // ignore signals older than this
 input long   MagicNumber    = 778899;
 input bool   PushEnabled    = false; // MT5 push to phone (set true after MetaQuotes ID configured)
+input string TradePairs     = "";    // comma list to trade ONLY these pairs (empty = all signals)
 
 #define GV_PREFIX "KIMIE_EA_"
 
@@ -318,6 +319,17 @@ void ProcessSignals()
 
       if(StringLen(id) == 0 || StringLen(pair) == 0) continue;
       if(IdDone(id)) continue;                        // already executed
+      // pair filter (empty TradePairs = trade all signal pairs)
+      if(StringLen(TradePairs) > 0)
+      {
+         string want = "," + TradePairs + ",";
+         string have = "," + pair + ",";
+         if(StringFind(want, have) < 0)
+         {
+            Print("SKIP (pair filter): ", pair, " not in TradePairs");
+            continue;
+         }
+      }
       long sigTime = (pub > 0) ? pub : ts;            // freshness from PUBLISH time
       long age = (long)TimeGMT() - sigTime;
       if(age < 0 || age > MaxSignalAgeSec) continue;  // stale
