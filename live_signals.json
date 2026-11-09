@@ -2,15 +2,6 @@
  "enabled": true,
  "signals": [
   {
-   "id": "GBPUSD-TEST-EAW",
-   "pair": "GBPUSD",
-   "dir": "LONG",
-   "sl_dist": 0.0019,
-   "tp_dist": 0.0019,
-   "ts": 1793633269,
-   "lot": 0.02
-  },
-  {
    "id": "USDJPY-1793696400",
    "pair": "USDJPY",
    "dir": "LONG",
@@ -195,6 +186,16 @@
    "ts": 1793973600,
    "pub": 1793975107,
    "lot": 0.02
+  },
+  {
+   "id": "EURUSD-1794205800",
+   "pair": "EURUSD",
+   "dir": "LONG",
+   "sl_dist": 0.000553,
+   "tp_dist": 0.000553,
+   "ts": 1794205800,
+   "pub": 1794207646,
+   "lot": 0.05
   }
  ]
 }
