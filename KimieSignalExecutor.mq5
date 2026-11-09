@@ -27,7 +27,7 @@
 //|  5. Enable Algo Trading (toolbar button)                         |
 //+------------------------------------------------------------------+
 #property copyright "Kimie & Zizi"
-#property version   "1.00"
+#property version   "1.40"
 #property strict
 
 input string SignalURL      = "https://api.github.com/repos/kimieventures/trading-signals/contents/live_signals.json";
