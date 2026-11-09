@@ -38,6 +38,7 @@ input int    SessionCloseGMT = 21;   // flatten all positions at this hour UTC
 input int    PollSeconds    = 75;    // KEEP >= 75 (GitHub API rate limit 60/hr)
 input int    MaxSignalAgeSec = 600;  // ignore signals older than this
 input long   MagicNumber    = 778899;
+input bool   PushEnabled    = false; // MT5 push to phone (set true after MetaQuotes ID configured)
 
 #define GV_PREFIX "KIMIE_EA_"
 
@@ -97,6 +98,7 @@ int LossesToday()
    datetime dayStart = TimeGMT() - (TimeGMT() % 86400);
    if(!HistorySelect(dayStart, TimeGMT() + 60)) return 0;
    int losses = 0;
+   int wins = 0;
    for(int i = 0; i < HistoryDealsTotal(); i++)
    {
       ulong ticket = HistoryDealGetTicket(i);
@@ -104,7 +106,11 @@ int LossesToday()
       if(HistoryDealGetInteger(ticket, DEAL_MAGIC) != MagicNumber) continue;
       if(HistoryDealGetInteger(ticket, DEAL_ENTRY) != DEAL_ENTRY_OUT) continue;
       if(HistoryDealGetDouble(ticket, DEAL_PROFIT) < 0) losses++;
+      else if(HistoryDealGetDouble(ticket, DEAL_PROFIT) > 0) wins++;
    }
+   // spec: halt after N losses WITH NO winning trade yet today.
+   // (wins present = EA is performing - only a losing streak halts it)
+   if(wins > 0) return 0;
    return losses;
 }
 //+------------------------------------------------------------------+
@@ -170,6 +176,9 @@ bool ExecuteSignal(const string pair, const string dir,
    }
    Print("EXECUTED ", pair, " ", dir, " lot=", useLot,
          " sl=", sl, " tp=", tp, " ticket=", res.order);
+   if(PushEnabled)
+      SendNotification("Zizi EA ENTERED: " + pair + " " + dir
+                      + " lot " + DoubleToString(useLot, 2));
    return true;
 }
 //+------------------------------------------------------------------+
@@ -341,4 +350,24 @@ void OnDeinit(const int reason)
    Comment("");
 }
 void OnTimer() { ProcessSignals(); }
+
+//+------------------------------------------------------------------+
+// Push notification when one of OUR positions closes (TP/SL/manual)
+void OnTradeTransaction(const MqlTradeTransaction &trans,
+                        const MqlTradeRequest &request,
+                        const MqlTradeResult &result)
+{
+   if(trans.type != TRADE_TRANSACTION_DEAL_ADD) return;
+   if(!PushEnabled) return;
+   ulong deal = trans.deal;
+   if(deal == 0) return;
+   if(!HistoryDealSelect(deal)) return;
+   if(HistoryDealGetInteger(deal, DEAL_MAGIC) != MagicNumber) return;
+   if(HistoryDealGetInteger(deal, DEAL_ENTRY) != DEAL_ENTRY_OUT) return;
+   double profit = HistoryDealGetDouble(deal, DEAL_PROFIT);
+   string symbol = HistoryDealGetString(deal, DEAL_SYMBOL);
+   SendNotification("Zizi EA CLOSED: " + symbol + " "
+                    + DoubleToString(profit, 2) + " USD"
+                    + (profit >= 0 ? " (TP win)" : " (SL loss)"));
+}
 //+------------------------------------------------------------------+
