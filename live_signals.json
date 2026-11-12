@@ -2,16 +2,6 @@
  "enabled": true,
  "signals": [
   {
-   "id": "GBPUSD-1794326400",
-   "pair": "GBPUSD",
-   "dir": "SHORT",
-   "sl_dist": 0.001856,
-   "tp_dist": 0.001856,
-   "ts": 1794326400,
-   "pub": 1794327951,
-   "lot": 0.01
-  },
-  {
    "id": "EURUSD-1794326400",
    "pair": "EURUSD",
    "dir": "SHORT",
@@ -200,6 +190,16 @@
    "ts": 1794407400,
    "pub": 1794409211,
    "lot": 0.02
+  },
+  {
+   "id": "zizitest-mt4-001",
+   "pair": "EURUSD",
+   "dir": "LONG",
+   "sl_dist": 0.004,
+   "tp_dist": 0.0057,
+   "ts": 1794481928,
+   "pub": 1794481928,
+   "lot": 0.01
   }
  ]
 }
