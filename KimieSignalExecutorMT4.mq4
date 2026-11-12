@@ -25,7 +25,7 @@
 //|  4. One chart per terminal. Enable AutoTrading.                  |
 //+------------------------------------------------------------------+
 #property copyright "Kimie & Zizi"
-#property version   "1.00"
+#property version   "1.01"
 #property strict
 
 input string SheetCSVURL = "https://docs.google.com/spreadsheets/d/1XTLK5qdtGK5UmvzUYxKo6qMDLCFw6twbLKqMffTbeiE/gviz/tq?tqx=out:csv";
@@ -43,6 +43,42 @@ input string TradePairs    = "";    // comma list; empty = all signal pairs
 
 bool g_haltedToday = false;
 int  g_lastHaltDay = -1;
+
+//+------------------------------------------------------------------+
+// self-announce to the Google Sheet (same form as reporters) so the
+// install is verifiable remotely. type=ea4init / type=ea4entry rows
+// are ignored by trade stats (only type=trade with pl counts).
+input string AnnounceFormURL = "https://docs.google.com/forms/d/e/1FAIpQLSfCP6f4rb8kW_DBCICbc5II7eiyPOwSCoRAJGH3aGcPoUMQmw/formResponse";
+input string AnnounceEntry   = "entry.1119234569";
+
+string UrlEnc(string s)
+{
+   string out = "";
+   for(int i = 0; i < StringLen(s); i++)
+   {
+      int c = StringGetChar(s, i);
+      if((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')
+         || (c >= '0' && c <= '9') || c == '-' || c == '_'
+         || c == '.' || c == '~' || c == '=' || c == ';')
+         out = out + CharToString(c);
+      else
+         out = out + StringFormat("%%%02X", c);
+   }
+   return out;
+}
+
+void Announce(string payload)
+{
+   string body = AnnounceEntry + "=" + UrlEnc(payload);
+   char post[];
+   StringToCharArray(body, post, 0, StringLen(body), CP_ACP);
+   ArrayResize(post, StringLen(body));
+   string headers = "Content-Type: application/x-www-form-urlencoded\r\n";
+   char result[];
+   string resHeaders;
+   WebRequest("POST", AnnounceFormURL, headers, 8000,
+              post, result, resHeaders);
+}
 
 //+------------------------------------------------------------------+
 string GvName(const string id)  { return GV_PREFIX + id; }
@@ -161,6 +197,13 @@ bool ExecuteSignal(string pair, string dir, double slDist, double tpDist,
    }
    Print("EXECUTED ", symbol, " ", dir, " lot=", useLot,
          " sl=", sl, " tp=", tp, " ticket=", ticket);
+   Announce("type=ea4entry;acct=" + IntegerToString(AccountNumber())
+            + ";pair=" + symbol + ";dir=" + dir
+            + ";lot=" + DoubleToString(useLot, 2)
+            + ";sl=" + DoubleToString(sl, Digits)
+            + ";tp=" + DoubleToString(tp, Digits)
+            + ";ticket=" + IntegerToString(ticket)
+            + ";tm=" + TimeToString(TimeGMT(), TIME_DATE | TIME_SECONDS));
    return true;
 }
 //+------------------------------------------------------------------+
@@ -315,6 +358,10 @@ int OnInit()
    EventSetTimer(MathMax(30, PollSeconds));
    Print("KimieSignalExecutorMT4 started. Magic=", MagicNumber,
          " MaxLots=", MaxLots, " Suffix=", SymbolSuffix);
+   Announce("type=ea4init;acct=" + IntegerToString(AccountNumber())
+            + ";srv=" + AccountServer()
+            + ";ver=mt4-executor-1.01"
+            + ";tm=" + TimeToString(TimeGMT(), TIME_DATE | TIME_SECONDS));
    return INIT_SUCCEEDED;
 }
 void OnDeinit(const int reason) { EventKillTimer(); }
