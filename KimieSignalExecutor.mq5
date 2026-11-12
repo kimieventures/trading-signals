@@ -27,7 +27,7 @@
 //|  5. Enable Algo Trading (toolbar button)                         |
 //+------------------------------------------------------------------+
 #property copyright "Kimie & Zizi"
-#property version   "1.50"
+#property version   "1.60"
 #property strict
 
 input string SignalURL      = "https://api.github.com/repos/kimieventures/trading-signals/contents/live_signals.json";
@@ -40,12 +40,17 @@ input int    MaxSignalAgeSec = 600;  // ignore signals older than this
 input long   MagicNumber    = 778899;
 input bool   PushEnabled    = false; // MT5 push to phone (set true after MetaQuotes ID configured)
 input string TradePairs     = "";    // comma list to trade ONLY these pairs (empty = all signals)
+// --- status reporting to Google Sheets (via Google Form bridge) ---
+input string StatusFormURL = "";   // formResponse URL, e.g. https://docs.google.com/forms/d/e/XXX/formResponse
+input string StatusEntry   = "";   // data entry id, e.g. entry.1234567890
+input int    StatusMinutes = 15;   // heartbeat every N minutes (0 = off)
 
 #define GV_PREFIX "KIMIE_EA_"
 
 datetime g_lastPoll = 0;
 bool     g_haltedToday = false;
 int      g_lastHaltDay = -1;
+datetime g_lastStatus = 0;
 
 //+------------------------------------------------------------------+
 string GvName(const string id)   { return GV_PREFIX + id; }
@@ -343,6 +348,95 @@ void ProcessSignals()
            " | halt: ", (g_haltedToday ? "YES" : "no"));
 }
 //+------------------------------------------------------------------+
+// --- Google Form status reporter (WebRequest -> Form -> Sheet) ---
+string UrlEncode(const string s)
+{
+   string out = "";
+   for(int i = 0; i < StringLen(s); i++)
+   {
+      ushort c = StringGetCharacter(s, i);
+      if((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')
+         || (c >= '0' && c <= '9') || c == '-' || c == '_'
+         || c == '.' || c == '~' || c == '=' || c == ';')
+         out += CharToString((uchar)c);
+      else
+      {
+         out += StringFormat("%%%02X", (int)c);
+      }
+   }
+   return out;
+}
+//+------------------------------------------------------------------+
+void PostStatus(const string payload)
+{
+   if(StringLen(StatusFormURL) == 0 || StringLen(StatusEntry) == 0) return;
+   string body = StatusEntry + "=" + UrlEncode(payload);
+   char post[];
+   StringToCharArray(body, post, 0, StringLen(body), CP_ACP);
+   ArrayResize(post, StringLen(body));
+   string headers = "Content-Type: application/x-www-form-urlencoded\r\n";
+   char result[];
+   string resHeaders;
+   ResetLastError();
+   int status = WebRequest("POST", StatusFormURL, headers, 8000,
+                           post, result, resHeaders);
+   if(status != 200)
+      Print("STATUS POST failed status=", status, " err=", GetLastError(),
+            " (allowlist https://docs.google.com in Tools>Options>Expert Advisors)");
+}
+//+------------------------------------------------------------------+
+void Heartbeat()
+{
+   double bal   = AccountInfoDouble(ACCOUNT_BALANCE);
+   double eq    = AccountInfoDouble(ACCOUNT_EQUITY);
+   double fm    = AccountInfoDouble(ACCOUNT_MARGIN_FREE);
+   double flpl  = 0;
+   int    posN  = 0;
+   for(int i = PositionsTotal() - 1; i >= 0; i--)
+   {
+      ulong ticket = PositionGetTicket(i);
+      if(ticket == 0) continue;
+      if(PositionGetInteger(POSITION_MAGIC) != MagicNumber) continue;
+      flpl += PositionGetDouble(POSITION_PROFIT);
+      posN++;
+   }
+   int wins = 0, losses = 0;
+   TodayStats(wins, losses);
+   string payload = "type=hb"
+      + ";acct=" + (string)AccountInfoInteger(ACCOUNT_LOGIN)
+      + ";srv=" + AccountInfoString(ACCOUNT_SERVER)
+      + ";ver=1.60"
+      + ";bal=" + DoubleToString(bal, 2)
+      + ";eq=" + DoubleToString(eq, 2)
+      + ";fm=" + DoubleToString(fm, 2)
+      + ";pos=" + (string)posN
+      + ";flpl=" + DoubleToString(flpl, 2)
+      + ";win=" + (string)wins
+      + ";los=" + (string)losses
+      + ";halt=" + (g_haltedToday ? "yes" : "no")
+      + ";conn=" + (string)TerminalInfoInteger(TERMINAL_CONNECTED)
+      + ";ping=" + (string)(TerminalInfoInteger(TERMINAL_PING_LAST) / 1000)
+      + ";tm=" + TimeToString(TimeGMT(), TIME_DATE | TIME_SECONDS);
+   PostStatus(payload);
+}
+//+------------------------------------------------------------------+
+void TodayStats(int &wins, int &losses)
+{
+   wins = 0; losses = 0;
+   datetime dayStart = TimeGMT() - (TimeGMT() % 86400);
+   if(!HistorySelect(dayStart, TimeGMT() + 60)) return;
+   for(int i = 0; i < HistoryDealsTotal(); i++)
+   {
+      ulong ticket = HistoryDealGetTicket(i);
+      if(ticket == 0) continue;
+      if(HistoryDealGetInteger(ticket, DEAL_MAGIC) != MagicNumber) continue;
+      if(HistoryDealGetInteger(ticket, DEAL_ENTRY) != DEAL_ENTRY_OUT) continue;
+      double p = HistoryDealGetDouble(ticket, DEAL_PROFIT);
+      if(p < 0) losses++;
+      else if(p > 0) wins++;
+   }
+}
+//+------------------------------------------------------------------+
 int OnInit()
 {
    if(StringLen(SignalURL) == 0)
@@ -361,7 +455,19 @@ void OnDeinit(const int reason)
    EventKillTimer();
    Comment("");
 }
-void OnTimer() { ProcessSignals(); }
+void OnTimer()
+{
+   ProcessSignals();
+   // heartbeat to Google Sheet every StatusMinutes (0 = off)
+   if(StatusMinutes > 0 && StringLen(StatusFormURL) > 0)
+   {
+      if(TimeGMT() - g_lastStatus >= StatusMinutes * 60)
+      {
+         g_lastStatus = TimeGMT();
+         Heartbeat();
+      }
+   }
+}
 
 //+------------------------------------------------------------------+
 // Push notification when one of OUR positions closes (TP/SL/manual)
@@ -370,7 +476,6 @@ void OnTradeTransaction(const MqlTradeTransaction &trans,
                         const MqlTradeResult &result)
 {
    if(trans.type != TRADE_TRANSACTION_DEAL_ADD) return;
-   if(!PushEnabled) return;
    ulong deal = trans.deal;
    if(deal == 0) return;
    if(!HistoryDealSelect(deal)) return;
@@ -378,8 +483,21 @@ void OnTradeTransaction(const MqlTradeTransaction &trans,
    if(HistoryDealGetInteger(deal, DEAL_ENTRY) != DEAL_ENTRY_OUT) return;
    double profit = HistoryDealGetDouble(deal, DEAL_PROFIT);
    string symbol = HistoryDealGetString(deal, DEAL_SYMBOL);
-   SendNotification("Zizi EA CLOSED: " + symbol + " "
-                    + DoubleToString(profit, 2) + " USD"
-                    + (profit >= 0 ? " (TP win)" : " (SL loss)"));
+   double lots   = HistoryDealGetDouble(deal, DEAL_VOLUME);
+   long   ticket = HistoryDealGetInteger(deal, DEAL_POSITION_ID);
+   // push notification
+   if(PushEnabled)
+      SendNotification("Zizi EA CLOSED: " + symbol + " "
+                       + DoubleToString(profit, 2) + " USD"
+                       + (profit >= 0 ? " (TP win)" : " (SL loss)"));
+   // trade row to Google Sheet (same form)
+   string payload = "type=trade"
+      + ";acct=" + (string)AccountInfoInteger(ACCOUNT_LOGIN)
+      + ";pair=" + symbol
+      + ";lot=" + DoubleToString(lots, 2)
+      + ";pl=" + DoubleToString(profit, 2)
+      + ";ticket=" + (string)ticket
+      + ";tm=" + TimeToString(TimeGMT(), TIME_DATE | TIME_SECONDS);
+   PostStatus(payload);
 }
 //+------------------------------------------------------------------+
