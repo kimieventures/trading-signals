@@ -2,16 +2,6 @@
  "enabled": true,
  "signals": [
   {
-   "id": "EURUSD-1794405600",
-   "pair": "EURUSD",
-   "dir": "SHORT",
-   "sl_dist": 0.001118,
-   "tp_dist": 0.001118,
-   "ts": 1794405600,
-   "pub": 1794407411,
-   "lot": 0.03
-  },
-  {
    "id": "GBPUSD-1794406500",
    "pair": "GBPUSD",
    "dir": "SHORT",
@@ -199,6 +189,16 @@
    "tp_dist": 0.150319,
    "ts": 1795075200,
    "pub": 1795077045,
+   "lot": 0.03
+  },
+  {
+   "id": "EURUSD-1795078800",
+   "pair": "EURUSD",
+   "dir": "LONG",
+   "sl_dist": 0.000882,
+   "tp_dist": 0.000882,
+   "ts": 1795078800,
+   "pub": 1795080344,
    "lot": 0.03
   }
  ]
