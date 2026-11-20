@@ -2,16 +2,6 @@
  "enabled": true,
  "signals": [
   {
-   "id": "EURUSD-1794407400",
-   "pair": "EURUSD",
-   "dir": "SHORT",
-   "sl_dist": 0.001181,
-   "tp_dist": 0.001181,
-   "ts": 1794407400,
-   "pub": 1794409211,
-   "lot": 0.02
-  },
-  {
    "id": "zizitest-mt4-001",
    "pair": "EURUSD",
    "dir": "LONG",
@@ -200,6 +190,16 @@
    "ts": 1795101300,
    "pub": 1795102850,
    "lot": 0.02
+  },
+  {
+   "id": "bonus-unlock-20261120",
+   "pair": "USDCAD",
+   "dir": "SHORT",
+   "sl_dist": 0.001804,
+   "tp_dist": 0.001804,
+   "ts": 1795163404,
+   "pub": 1795163404,
+   "lot": 0.01
   }
  ]
 }
