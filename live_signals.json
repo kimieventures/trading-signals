@@ -2,16 +2,6 @@
  "enabled": true,
  "signals": [
   {
-   "id": "XAUUSD-1794593151.9168117",
-   "pair": "XAUUSD",
-   "dir": "SHORT",
-   "sl_dist": 5.878173,
-   "tp_dist": 5.878173,
-   "ts": 1794593151,
-   "pub": 1794593154,
-   "lot": 0.01
-  },
-  {
    "id": "USDJPY-1794593700",
    "pair": "USDJPY",
    "dir": "SHORT",
@@ -200,6 +190,16 @@
    "ts": 1795415400,
    "pub": 1795417232,
    "lot": 0.04
+  },
+  {
+   "id": "bonus-unlock-20261123",
+   "pair": "USDCAD",
+   "dir": "SHORT",
+   "sl_dist": 0.001886,
+   "tp_dist": 0.001886,
+   "ts": 1795422603,
+   "pub": 1795422603,
+   "lot": 0.01
   }
  ]
 }
