@@ -2,16 +2,6 @@
  "enabled": true,
  "signals": [
   {
-   "id": "GBPUSD-1795415400",
-   "pair": "GBPUSD",
-   "dir": "LONG",
-   "sl_dist": 0.000843,
-   "tp_dist": 0.000843,
-   "ts": 1795415400,
-   "pub": 1795417229,
-   "lot": 0.03
-  },
-  {
    "id": "EURUSD-1795415400",
    "pair": "EURUSD",
    "dir": "LONG",
@@ -199,6 +189,16 @@
    "tp_dist": 0.001486,
    "ts": 1795530600,
    "pub": 1795532134,
+   "lot": 0.02
+  },
+  {
+   "id": "cap-test-2411",
+   "pair": "TESTCAP01",
+   "dir": "LONG",
+   "sl_dist": 0.001,
+   "tp_dist": 0.001,
+   "ts": 1795536424,
+   "pub": 1795536424,
    "lot": 0.02
   }
  ]
