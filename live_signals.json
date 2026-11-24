@@ -2,16 +2,6 @@
  "enabled": false,
  "signals": [
   {
-   "id": "EURUSD-1795075200",
-   "pair": "EURUSD",
-   "dir": "LONG",
-   "sl_dist": 0.000841,
-   "tp_dist": 0.000841,
-   "ts": 1795075200,
-   "pub": 1795076745,
-   "lot": 0.03
-  },
-  {
    "id": "USDJPY-1795075200",
    "pair": "USDJPY",
    "dir": "LONG",
@@ -200,6 +190,16 @@
    "ts": 1795460724,
    "pub": 1795460727,
    "lot": 0.01
+  },
+  {
+   "id": "USDJPY-1795501800",
+   "pair": "USDJPY",
+   "dir": "LONG",
+   "sl_dist": 0.167923,
+   "tp_dist": 0.167923,
+   "ts": 1795501800,
+   "pub": 1795503625,
+   "lot": 0.02
   }
  ]
 }
