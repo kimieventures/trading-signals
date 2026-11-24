@@ -2,16 +2,6 @@
  "enabled": false,
  "signals": [
   {
-   "id": "bonus-unlock-20261120",
-   "pair": "USDCAD",
-   "dir": "SHORT",
-   "sl_dist": 0.001804,
-   "tp_dist": 0.001804,
-   "ts": 1795163404,
-   "pub": 1795163404,
-   "lot": 0.01
-  },
-  {
    "id": "USDJPY-1795167900",
    "pair": "USDJPY",
    "dir": "SHORT",
@@ -199,6 +189,16 @@
    "tp_dist": 0.193298,
    "ts": 1795513500,
    "pub": 1795515032,
+   "lot": 0.02
+  },
+  {
+   "id": "EURUSD-1795517100",
+   "pair": "EURUSD",
+   "dir": "LONG",
+   "sl_dist": 0.001204,
+   "tp_dist": 0.001204,
+   "ts": 1795517100,
+   "pub": 1795518625,
    "lot": 0.02
   }
  ]
