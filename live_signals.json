@@ -2,16 +2,6 @@
  "enabled": false,
  "signals": [
   {
-   "id": "GBPUSD-1795101300",
-   "pair": "GBPUSD",
-   "dir": "SHORT",
-   "sl_dist": 0.001667,
-   "tp_dist": 0.001667,
-   "ts": 1795101300,
-   "pub": 1795102850,
-   "lot": 0.02
-  },
-  {
    "id": "bonus-unlock-20261120",
    "pair": "USDCAD",
    "dir": "SHORT",
@@ -199,6 +189,16 @@
    "tp_dist": 0.001157,
    "ts": 1795513500,
    "pub": 1795515029,
+   "lot": 0.02
+  },
+  {
+   "id": "USDJPY-1795513500",
+   "pair": "USDJPY",
+   "dir": "LONG",
+   "sl_dist": 0.193298,
+   "tp_dist": 0.193298,
+   "ts": 1795513500,
+   "pub": 1795515032,
    "lot": 0.02
   }
  ]
