@@ -2,16 +2,6 @@
  "enabled": false,
  "signals": [
   {
-   "id": "EURUSD-1795415400",
-   "pair": "EURUSD",
-   "dir": "LONG",
-   "sl_dist": 0.000679,
-   "tp_dist": 0.000679,
-   "ts": 1795415400,
-   "pub": 1795417232,
-   "lot": 0.04
-  },
-  {
    "id": "bonus-unlock-20261123",
    "pair": "USDCAD",
    "dir": "SHORT",
@@ -199,6 +189,16 @@
    "tp_dist": 0.001,
    "ts": 1795536424,
    "pub": 1795536424,
+   "lot": 0.02
+  },
+  {
+   "id": "GBPUSD-1795592700",
+   "pair": "GBPUSD",
+   "dir": "SHORT",
+   "sl_dist": 0.001146,
+   "tp_dist": 0.001146,
+   "ts": 1795592700,
+   "pub": 1795594203,
    "lot": 0.02
   }
  ]
